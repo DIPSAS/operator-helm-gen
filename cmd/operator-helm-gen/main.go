@@ -5,19 +5,34 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime/debug"
 	"strings"
-	"time"
 
 	"github.com/DIPSAS/operator-helm-gen/pkg/helmgen"
 )
 
+func Version() string {
+	info, ok := debug.ReadBuildInfo()
+	if !ok || info.Main.Version == "" {
+		return "(unknown)"
+	}
+
+	return info.Main.Version
+}
+
 func main() {
-	println(time.Now().UTC().Format(time.RFC3339))
 	var keep string
 	var dir string
+	var showVersion bool
 	flag.StringVar(&keep, "keep", "", "Specify which resources to keep, separated by comma.")
 	flag.StringVar(&dir, "dir", "", "Specify output dir")
+	flag.BoolVar(&showVersion, "version", false, "Prints the version and exits.")
 	flag.Parse()
+
+	if showVersion {
+		fmt.Printf("Version: %s\n", Version())
+		return
+	}
 
 	fmt.Printf("Generating for resources: %s, output dir %s\n", keep, dir)
 
