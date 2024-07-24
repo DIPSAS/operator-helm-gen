@@ -37,3 +37,21 @@ func TestPatchNamespace(t *testing.T) {
 		assert.Contains(t, patchedResourceNS, ".Release.Namespace")
 	})
 }
+
+func TestParseCRD(t *testing.T) {
+	t.Run("crd with escape chars in descriptions", func(t *testing.T) {
+		data, err := os.ReadFile(filepath.Join("..", "..", "test", "operator-helm-gen", "testdata", "kustomize-output.yaml"))
+
+		if assert.NoError(t, err) {
+			assert.NotEmpty(t, data)
+		}
+
+		resources := GetResources(data)
+		assert.NotEmpty(t, resources)
+
+		p := NewPatcher(Spec{KeepRresources: map[string]string{"CustomResourceDefinition": "ok"}})
+		err = p.Generate(resources)
+
+		assert.NoError(t, err)
+	})
+}

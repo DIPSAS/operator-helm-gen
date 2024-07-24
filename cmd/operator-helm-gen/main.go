@@ -42,7 +42,7 @@ func main() {
 		panic(err)
 	}
 
-	parts := strings.Split(string(data), "---")
+	resources := helmgen.GetResources(data)
 	spec := helmgen.Spec{OutputDir: dir}
 
 	k := make(map[string]string)
@@ -53,7 +53,7 @@ func main() {
 	spec.KeepRresources = k
 
 	p := &helmgen.Patcher{Spec: spec}
-	err = p.Generate(parts)
+	err = p.Generate(resources)
 	if err != nil {
 		panic(fmt.Errorf("failed generating files from input: %v", err))
 	}

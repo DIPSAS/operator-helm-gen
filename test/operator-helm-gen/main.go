@@ -32,8 +32,7 @@ func main() {
 
 	whichResources := "RoleBinding,Role"
 
-	input := string(data)
-	resources := strings.Split(input, "---")
+	resources := helmgen.GetResources(data)
 	keep := make(map[string]string)
 
 	for _, r := range strings.Split(whichResources, ",") {
