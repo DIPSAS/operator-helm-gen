@@ -20,7 +20,7 @@ Example usage:
 
 ```bash
 GOBIN=$(pwd)/bin
-go install github.com/DIPSAS/operator-helm-gen/cmd/operator-helm-gen@v0.1.1
+go install github.com/DIPSAS/operator-helm-gen/cmd/operator-helm-gen@v0.1.2
 
 mkdir -p /some-dir/generated
 ./bin/kustomize build config/default | ./bin/operator-helm-gen --dir /some-dir/generated --keep ClusterRoleBinding,RoleBinding,CustomResourceDefinition,Role,ClusterRole
