@@ -79,7 +79,7 @@ func (p *Patcher) doResource(resource string) error {
 		return fmt.Errorf("could not convert patched JSON to YAML: %v", err)
 	}
 
-	contents := make([]string, 2)
+	contents := make([]string, 0)
 	contents = append(contents, fmt.Sprintf("#filename %s", filename))
 	contents = append(contents, string(yamlData))
 
