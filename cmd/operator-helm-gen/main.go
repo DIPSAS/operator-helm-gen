@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"runtime/debug"
-	"strings"
 
 	"github.com/DIPSAS/operator-helm-gen/pkg/helmgen"
 )
@@ -24,9 +23,11 @@ func main() {
 	var keep string
 	var dir string
 	var showVersion bool
+	var annotationsArg string
 	flag.StringVar(&keep, "keep", "", "Specify which resources to keep, separated by comma.")
 	flag.StringVar(&dir, "dir", "", "Specify output dir")
 	flag.BoolVar(&showVersion, "version", false, "Prints the version and exits.")
+	flag.StringVar(&annotationsArg, "annotations", "", "Specify annotations to add to the generated resources. Format is \"annotation-name=annotation-value\". Multiple annotations must be comma-separated.")
 	flag.Parse()
 
 	if showVersion {
@@ -45,12 +46,15 @@ func main() {
 	resources := helmgen.GetResources(data)
 	spec := helmgen.Spec{OutputDir: dir}
 
-	k := make(map[string]string)
-	for _, x := range strings.Split(keep, ",") {
-		k[x] = "keep"
-	}
+	spec.KeepResources = helmgen.GetResourcesToKeep(keep)
+	if len(annotationsArg) > 0 {
+		annotations, err := helmgen.GetAnnotationsFromArg(annotationsArg)
+		if err != nil {
+			panic(fmt.Errorf("could not parse annotations arg: %w", err))
+		}
 
-	spec.KeepRresources = k
+		spec.Annotations = annotations
+	}
 
 	p := &helmgen.Patcher{Spec: spec}
 	err = p.Generate(resources)

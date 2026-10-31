@@ -15,16 +15,22 @@ In addition, the program accepts the following command line arguments:
 - `keep`: The resource types to inspect and generate for if found in the payload.
 - `dir`: The directory to place the generated YAML files. If empty, stdout is used. The program does NOT check if the directory exists.
 - `version`: Prints the version (if used with `go install`) and exits.
+- `annotations`: Places annotations on the generated resources. The argument must be of the form `annotation-name1=value1,annotation-name2=value2`. Each annotation must contain "=" and each annotation is separated by a comma. If the input resource already contains an annotation with the same name, the annotation from the argument is ignored.
 
 Example usage:
 
 ```bash
 GOBIN=$(pwd)/bin
 go install github.com/DIPSAS/operator-helm-gen/cmd/operator-helm-gen@v0.1.2
-
+#create output dir first
 mkdir -p /some-dir/generated
+#send input to the program using stdin
 ./bin/kustomize build config/default | ./bin/operator-helm-gen --dir /some-dir/generated --keep ClusterRoleBinding,RoleBinding,CustomResourceDefinition,Role,ClusterRole
+
+#move the resulting files
 cp -a /some-dir/generated/. /path/to/helm-templates
+
+#clean up
 rm -rf /some-dir/generated
 
 ```

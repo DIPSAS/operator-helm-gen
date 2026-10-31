@@ -1,6 +1,10 @@
 package helmgen
 
 type Spec struct {
-	KeepRresources map[string]string
-	OutputDir      string
+	//which resources to work on.
+	KeepResources map[string]string
+	//the output directory.
+	OutputDir string
+	//annotations to insert on the generated results.
+	Annotations map[string]string
 }

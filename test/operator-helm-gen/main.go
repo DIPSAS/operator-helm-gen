@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/DIPSAS/operator-helm-gen/pkg/helmgen"
 )
@@ -30,16 +29,16 @@ func main() {
 		}
 	}
 
-	whichResources := "RoleBinding,Role"
-
 	resources := helmgen.GetResources(data)
-	keep := make(map[string]string)
 
-	for _, r := range strings.Split(whichResources, ",") {
-		keep[r] = "keep-it"
+	annotationsArg := "argoproj.io/sync-wave=123,test/test=test"
+	annotations, err := helmgen.GetAnnotationsFromArg(annotationsArg)
+	if err != nil {
+		panic(fmt.Errorf("could not parse annotation arg: %w ", err))
 	}
 
-	spec := helmgen.Spec{KeepRresources: keep, OutputDir: dir}
+	whichResources := "RoleBinding,Role"
+	spec := helmgen.Spec{KeepResources: helmgen.GetResourcesToKeep(whichResources), OutputDir: dir, Annotations: annotations}
 
 	p := helmgen.NewPatcher(spec)
 	err = p.Generate(resources)
