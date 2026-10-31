@@ -1,6 +1,7 @@
 package helmgen
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -61,7 +62,7 @@ func (p *Patcher) doResource(resource string) error {
 		return nil
 	}
 
-	_, ok := p.Spec.KeepRresources[kind]
+	_, ok := p.Spec.KeepResources[kind]
 	if !ok {
 		return nil
 	}
@@ -74,7 +75,9 @@ func (p *Patcher) doResource(resource string) error {
 		return fmt.Errorf("failed patching resource kind %s, name %s: %v", kind, name, err)
 	}
 
-	yamlData, err := yaml.JSONToYAML(patched)
+	patched2, err := mergeAnnotations(patched, p.Spec.Annotations)
+
+	yamlData, err := yaml.JSONToYAML(patched2)
 	if err != nil {
 		return fmt.Errorf("could not convert patched JSON to YAML: %v", err)
 	}
@@ -100,6 +103,79 @@ func (p *Patcher) doResource(resource string) error {
 	}
 
 	return nil
+}
+
+func getAnnotationsFromJSONData(data []byte) (map[string]string, error) {
+	if len(data) == 0 {
+		return nil, nil
+	}
+
+	ret := make(map[string]string)
+	annotationElement := jsonIterator.Get(data, "metadata", "annotations")
+
+	val := annotationElement.ToString()
+	if len(val) == 0 {
+		return ret, nil
+	}
+
+	err := jsonIterator.Unmarshal([]byte(annotationElement.ToString()), &ret)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed unmarshaling annotations: %w", err)
+	}
+
+	return ret, nil
+}
+
+func mergeAnnotations(data []byte, annotations map[string]string) ([]byte, error) {
+	if len(annotations) == 0 {
+		return data, nil
+	}
+
+	j, err := yaml.YAMLToJSON(data)
+	if err != nil {
+		return nil, fmt.Errorf("failed converting YAML to JSON: %w", err)
+	}
+
+	annotationValues, err := getAnnotationsFromJSONData(j)
+	if err != nil {
+		return nil, fmt.Errorf("could not get annotations from JSON: %w", err)
+	}
+
+	if len(annotationValues) > 0 {
+		for k, v := range annotations {
+			_, ok := annotationValues[k]
+			if !ok {
+				annotationValues[k] = v
+			}
+		}
+	} else {
+		annotationValues = annotations
+	}
+
+	annJSON, err := json.Marshal(annotationValues)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal annotation values: %w", err)
+	}
+
+	annotationJSON := string(annJSON)
+
+	patchSpec := []byte(`[
+			{"op": "replace", "path": "/metadata/annotations", "value": ` + annotationJSON + `}
+		]`)
+
+	patch, err := jsonpatch.DecodePatch(patchSpec)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode patch %s for annotations: %w", annotationJSON, err)
+	}
+
+	modified, err := patch.Apply(j)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply annotations patch %s to data:\n%s: %w", annotationJSON, string(data), err)
+	}
+
+	return modified, nil
+
 }
 
 func patchResource(data []byte) ([]byte, error) {
