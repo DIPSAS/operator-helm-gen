@@ -44,3 +44,24 @@ func TestGetResources(t *testing.T) {
 		}
 	})
 }
+
+func TestGetAnnotationsFromArg(t *testing.T) {
+	t.Run("parse annotations and return map", func(t *testing.T) {
+		arg := "argocd.argoproj.io/sync-wave=1234,argocd.argoproj.io/sync-options=Delete=false"
+		annotations, err := GetAnnotationsFromArg(arg)
+		if assert.NoError(t, err) {
+			assert.NotEmpty(t, annotations)
+			assert.Equal(t, 2, len(annotations))
+			assert.Equal(t, "1234", annotations["argocd.argoproj.io/sync-wave"])
+			assert.Equal(t, "Delete=false", annotations["argocd.argoproj.io/sync-options"])
+		}
+	})
+
+	t.Run("invalid annotation raises error", func(t *testing.T) {
+		arg := "argocd.argoproj.io/sync-wave=1234,argocd.argoproj.io/sync-options"
+		annotations, err := GetAnnotationsFromArg(arg)
+		if assert.Error(t, err) {
+			assert.Nil(t, annotations)
+		}
+	})
+}
