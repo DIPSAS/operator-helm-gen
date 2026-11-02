@@ -136,6 +136,7 @@ func TestAnnotations(t *testing.T) {
 		{name: "add annotations to kustomize output", inputFilepath: filepath.Join("..", "..", "test", "operator-helm-gen", "testdata", "kustomize-output.yaml"), outputDir: "generated_tmp", resources: map[string]string{"CustomResourceDefinition": "yes"}, annotations: map[string]string{"argocd.argoproj.io/sync-wave": "1234"}},
 		{name: "add annotations to crd with annotations", inputFilepath: filepath.Join("..", "..", "test", "operator-helm-gen", "testdata", "crd-with-annotations.yaml"), outputDir: "generated_tmp2", resources: map[string]string{"CustomResourceDefinition": "yes"}, annotations: map[string]string{"argocd.argoproj.io/sync-wave": "1234"}},
 		{name: "add annotations to crd that has no annotations", inputFilepath: filepath.Join("..", "..", "test", "operator-helm-gen", "testdata", "crd-without-annotations.yaml"), outputDir: "generated_tmp3", resources: map[string]string{"CustomResourceDefinition": "yes"}, annotations: map[string]string{"argocd.argoproj.io/sync-wave": "1234"}},
+		{name: "add annotation with equals sign in value ", inputFilepath: filepath.Join("..", "..", "test", "operator-helm-gen", "testdata", "kustomize-output.yaml"), outputDir: "generated_tmp", resources: map[string]string{"CustomResourceDefinition": "yes"}, annotations: map[string]string{"argocd.argoproj.io/sync-wave": "1234", "argocd.argoproj.io/sync-options": "Delete=false"}},
 	}
 
 	for _, tc := range testCases {

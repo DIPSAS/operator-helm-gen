@@ -26,11 +26,13 @@ func GetResourcesToKeep(arg string) map[string]string {
 func GetAnnotationsFromArg(arg string) (map[string]string, error) {
 	annotations := make(map[string]string)
 	for _, a := range strings.Split(arg, ",") {
-		pair := strings.Split(a, "=")
-		if len(pair) != 2 {
-			return nil, fmt.Errorf("the parameter value \"%s\" is not a valid annotation", a)
+		idx := strings.Index(a, "=")
+		if idx == -1 {
+			return nil, fmt.Errorf("the parameter value \"%s\" is not a valid annotation: missing \"=\" separator", a)
 		}
-		annotations[pair[0]] = pair[1]
+		left := a[:idx]
+		right := a[idx+1:]
+		annotations[left] = right
 	}
 
 	return annotations, nil
